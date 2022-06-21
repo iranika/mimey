@@ -15,6 +15,11 @@ extern {
 }
 
 #[wasm_bindgen]
+pub struct WasmMimeyPiece {
+    pieces: domain::MimeyPiece
+}
+
+#[wasm_bindgen]
 pub fn greet() {
     alert("Hello, wasm!");
 }

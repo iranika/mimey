@@ -1,3 +1,5 @@
 target/*
 cli/target
 Cargo.lock
+domain/tests/サンプルテキスト.txt
+domain/tests/SampleScript.txt

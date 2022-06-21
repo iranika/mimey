@@ -1,79 +1,76 @@
-
 use std::iter::Iterator;
 
-pub trait MimeyInterface{
-    fn add(&self, a: i32, b: i32) -> i32{
-        a + b
-    }
-}
-
-pub struct MimeyPiece{
+#[derive(Debug)]
+pub struct MimeyPiece {
     pub dialogue: String,
     pub comments: String,
     pub sound_note: String,
     pub charactor: String,
-    pub sound_position: i8,
+    pub sound_position: String,
+}
+#[repr(transparent)]
+pub struct Mimey {
+    pub pieces: Vec<MimeyPiece>,
 }
 
-pub struct Mimey{
-    pieces: Vec<MimeyPiece>
+pub struct MeDoRaw {
+    pub header: String,
+    pub body: String
 }
-
-impl MimeyInterface for Mimey {}
 
 impl Mimey {
-    fn get_comments(block: Vec<&str>)->Vec<&str>{
-        let comment = block.iter()
-                    .copied()
-                    .filter(|&x| {
-                        x.chars().nth(0).unwrap() == '＃' || x.chars().nth(0).unwrap() == '#'
-                    })
-                    .collect::<Vec<_>>();
-        return comment
+    fn get_attribute(block: Vec<&str>, prefix: Vec<char>) -> Vec<String> {
+        let attrs: Vec<String> = block
+            .into_iter()
+            .filter(|x| prefix.iter().any(|&p| x.chars().nth(0).unwrap() == p))
+            .map(|v| -> String {
+                let mut text = v.to_string().clone();
+                text.remove(0);
+                text
+            })
+            .collect();
+        return attrs;
     }
-
-    fn get_attribute(block: Vec<&str>, prefix: Vec<char>)->Vec<&str>{
-        let attrs = block.iter()
-                    .copied()
-                    .filter(|&x| {
-                        prefix.iter().any(|&p|{
-                            x.chars().nth(0).unwrap() == p
-                        })
-                    })
-                    .collect::<Vec<&str>>();
-        
-        return attrs
+    fn get_dialogue(block: Vec<&str>, ignorePrefix: Vec<char>) -> Vec<String> {
+        let dialogue = block
+            .into_iter()
+            .filter(|x| ignorePrefix.iter().all(|&p| x.chars().nth(0).unwrap() != p))
+            .map(|v| v.to_string())
+            .collect();
+        return dialogue;
     }
+}
 
-
-    pub fn parse(_text: &str)-> Vec<MimeyPiece>{
-        let tmp = _text.replace("\r\n", "\n");
-        let blocks: Vec<&str> = tmp.split("\n\n").collect();
-        println!("blocks{:?}", blocks);
-        let block = blocks.iter().map(|&x| -> MimeyPiece {
+pub extern "win64" fn parseMimey(_text: &str) -> Mimey {
+    let tmp = _text.replace("\r\n", "\n");
+    let blocks: Vec<&str> = tmp.split("\n\n").collect();
+    //println!("blocks{:?}", blocks);
+    let block = blocks
+        .iter()
+        .map(|&x| -> MimeyPiece {
             let lines: Vec<&str> = x.split("\n").collect::<Vec<&str>>();
-            let comments = Mimey::get_attribute(lines, vec!['#','＃']).join(","); //Mimey::get_comments(lines).join(",");
+            let dialogue = Mimey::get_dialogue(
+                lines.clone(),
+                vec!['#', '＃', '$', '＄', '@', '＠', '!', '！'],
+            )
+            .join(","); //Mimey::get_comments(lines).join(",");
+            let comments = Mimey::get_attribute(lines.clone(), vec!['#', '＃']).join(","); //Mimey::get_comments(lines).join(",");
+            let sound_note = Mimey::get_attribute(lines.clone(), vec!['$', '＄']).join(",");
+            let charactor = Mimey::get_attribute(lines.clone(), vec!['@', '＠']).join(",");
+            let sound_position = Mimey::get_attribute(lines.clone(), vec!['!', '！']).join(",");
 
-            return MimeyPiece{
-                dialogue: comments,
-                comments: "comment text".to_string(),
-                sound_note: "sound note text".to_string(),
-                charactor: "charactor text".to_string(),
-                sound_position: 1
-            }
-        }).collect::<Vec<_>>();
-        println!("{:?}", block[3].dialogue);
-        
+            return MimeyPiece {
+                dialogue: dialogue,
+                comments: comments,
+                sound_note: sound_note,
+                charactor: charactor,
+                sound_position: sound_position,
+            };
+        })
+        .collect::<Vec<_>>();
+    println!("{:?}", block);
 
-        let dummy = MimeyPiece{
-            dialogue: "dialogue text".to_string(),
-            comments: "comment text".to_string(),
-            sound_note: "sound note text".to_string(),
-            charactor: "charactor text".to_string(),
-            sound_position: 1
-        };
-        let result: Vec<MimeyPiece> = vec![dummy];
+    let result: Mimey = Mimey { pieces: block };
 
-        return result;
-    }
+    return result;
 }
