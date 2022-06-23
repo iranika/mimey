@@ -3,3 +3,5 @@ cli/target
 Cargo.lock
 domain/tests/サンプルテキスト.txt
 domain/tests/SampleScript.txt
+domain/tests/SampleScript.afterTheMonday.txt
+domain/tests/SampleSS.txt

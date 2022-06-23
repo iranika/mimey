@@ -21,4 +21,14 @@ mod domain_tests {
         
         assert_eq!(result.pieces[0].charactor, dummy.charactor);
     }
+
+    
+    #[test]
+    fn test_parseMedoRaw(){
+        let text = std::fs::read_to_string("tests/SampleScript.txt").unwrap();
+        let result = domain::parseMedoRaw(&text);
+        println!("MeDoRaw.body=>{:?}", result.getBody().unwrap());
+        assert_eq!(1, 1);
+        //println!("MeDoRaw.header=>{:?}", result.getHeader().unwrap());
+    }
 }
